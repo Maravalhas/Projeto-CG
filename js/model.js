@@ -25,31 +25,31 @@ export default class Model {
         //idle
 
             this.idleImages[1] = new Image()
-            this.idleImages[1].src = `../sprites/idle-left.png`
+            this.idleImages[1].src = `../sprites/idle/idle-left.png`
 
             this.idleImages[2] = new Image()
-            this.idleImages[2].src = `../sprites/idle-right.png`
+            this.idleImages[2].src = `../sprites/idle/idle-right.png`
 
         //moving
 
         for (let i = 1; i != 5; i++)
         {
             this.movingLeftImages[i] = new Image()
-            this.movingLeftImages[i].src = `../sprites/move-left-${i}.png`
+            this.movingLeftImages[i].src = `../sprites/moveleft/move-left-${i}.png`
 
             this.movingRightImages[i] = new Image()
-            this.movingRightImages[i].src= `../sprites/move-right-${i}.png`
+            this.movingRightImages[i].src= `../sprites/moveright/move-right-${i}.png`
         }
 
         //attack
 
-        for (let i = 1; i != 6; i++)
+        for (let i = 1; i != 8; i++)
         {
             this.attackLeftImages[i] = new Image()
-            this.attackLeftImages[i].src = `../sprites/attack-left-${i}.png`
+            this.attackLeftImages[i].src = `../sprites/attackleft/attack-left-${i}.png`
 
             this.attackRightImages[i] = new Image()
-            this.attackRightImages[i].src= `../sprites/attack-right-${i}.png`
+            this.attackRightImages[i].src= `../sprites/attackright/attack-right-${i}.png`
         }
 
         //hurt
@@ -66,7 +66,7 @@ const model = new Model()
 
 let left = false
 let right = false
-let speed = 20
+let speed = 10
 
 let balls = new Array();
 
@@ -81,6 +81,7 @@ let Y = 0
 
 let direction = "right"
 let state = "idle"
+let attack = false
 
 let frame = 1
 
@@ -91,9 +92,19 @@ function getFrame(){
         state = "idle"
     }
 
+    else if(right == true && left == true){
+
+        state = "idle"
+    }
+
     else{
 
         state = "moving"
+    }
+
+    if(attack){
+        
+        state = "attacking"
     }
 
     switch(state){
@@ -154,34 +165,59 @@ function getFrame(){
                 default: break;
             }
 
-                
-
             break;
         }
 
         case "attacking":{
 
-            if(direction == "left")
-            {
-                frame++
-                model.activeImages = model.attackLeftImages[frame]
-            }
-            else
-            {
-                frame++
-                model.activeImages = model.attackRightImages[frame]
-            }
+            switch(direction){
+
+                case "right": {
+
+                    if(frame < 7){
+                        frame++
+                    }
+        
+                    else{
+
+                        attack = false
+                    }
+    
+                    model.activeImages = model.attackRightImages
+
+                    break;
+                }
+
+                case "left": {
+
+                    if(frame < 7){
+
+                        frame++
+                    }
+        
+                    else{
+
+                        attack = false
+                    }
+    
+                    model.activeImages = model.attackLeftImages
+
+                    break;
+                }
+
+                default: break;
+            } 
         }
     }
 }
 
 window.addEventListener('keydown',keyPressed)
 window.addEventListener('keyup',keyLeft)
-window.addEventListener('click',event=>{state="attacking"})
+window.addEventListener('click',event=>{attack = true; frame = 1})
 
 window.onload = function(){
 
-    setInterval(render,1000/10)
+    setInterval(render,1000/15)
 }
 
 function keyPressed(e){
@@ -209,7 +245,7 @@ function render(){
 
     getFrame()
 
-        if(right == true){
+        if(right == true  && attack == false){
 
             if(X < W-60)
             {
@@ -217,7 +253,7 @@ function render(){
             }   
         }
 
-        if(left == true){
+        if(left == true && attack == false){
             
             if (X > 10)
             {
@@ -225,9 +261,8 @@ function render(){
             }
         }
 
-        ctx.drawImage(model.activeImages[frame],X,300,60,80)
+        ctx.drawImage(model.activeImages[frame],X,350,50,60)
 
-        
 }
 
 function createBalls(){
