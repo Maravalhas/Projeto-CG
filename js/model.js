@@ -1,3 +1,14 @@
+//Canvas Indentity
+const canvas = document.querySelector('#canvas')
+const ctx = canvas.getContext("2d")
+
+const W = canvas.width
+const H = canvas.height
+
+let X = 0
+let Y = 0
+
+
 export default class Model {
 
     constructor(){
@@ -15,7 +26,7 @@ export default class Model {
         this.setImages()
 
         this.background = new Image()
-        this.background.src= ""
+        this.background.src= "../background.jpg"
 
         this.activeImages = []
     }
@@ -60,31 +71,85 @@ export default class Model {
         }
     }
 
+} 
+const model = new Model()
+
+
+
+class Balls {
+    constructor(x, y, r, c, v) {
+
+        this.x = x;
+        this.y = y;
+        this.id = b.length
+
+        this.vY = v; //velocity
+        this.c = c; // color
+        this.R = r; // circle radius
+        this.a = 0.9
+        this.stop=false;
+    }
+    
+    update(){
+        if (this.y < H - this.R) {
+
+            this.vY += this.a // increase circle velocity in Y
+        }
+
+        else{
+            this.vY = -this.vY
+        }
+
+        this.y += this.vY
+    }
+
+    draw() {
+        ctx.fillStyle = this.c;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.R, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+   
+    
 }
 
-const model = new Model()
+//Ball Creation
+let b = new Array()
+let ballId = 1
+createBalls();
+
+function createBalls(){
+
+    for (let i = 0; i < 2; i++) {
+
+        // random position
+        let xInit = 20 + Math.random() * (W - 2 * 20);
+        
+        // random velocity
+        let velocity = 1 + Math.random() * 3;
+
+        b.push(new Balls(xInit, 30, 20, 'Red', velocity))
+
+        ballId++
+    }
+}
+
+
+
+//Movement 
 
 let left = false
 let right = false
-let speed = 10
-
-let balls = new Array();
-
-const canvas = document.querySelector('#canvas')
-const ctx = canvas.getContext("2d")
-
-const W = canvas.width
-const H = canvas.height
-
-let X = 0
-let Y = 0
+let playerSpeed = 15
 
 let direction = "right"
 let state = "idle"
+let frame = 1
 let attack = false
 
-let frame = 1
+let projectileId = 1
 
+//Set Movement Frames/States
 function getFrame(){
 
     if(right == false && left == false){
@@ -207,18 +272,21 @@ function getFrame(){
 
                 default: break;
             } 
+
+            if(frame == 4){
+                        
+                p.push(new Projectile(X,H-60))
+                projectileId ++
+            }
         }
     }
 }
 
+//Action Detection
 window.addEventListener('keydown',keyPressed)
 window.addEventListener('keyup',keyLeft)
 window.addEventListener('click',event=>{attack = true; frame = 1})
 
-window.onload = function(){
-
-    setInterval(render,1000/15)
-}
 
 function keyPressed(e){
 
@@ -238,10 +306,61 @@ function keyLeft(e){
     }
 }
 
+
+
+//Set Animation
+window.onload = function(){
+
+    setInterval(render,1000/20)
+}
+
+
+//create Projectiles
+
+let p = new Array()
+
+class Projectile{
+
+    constructor(x,y){
+        this.x = x
+        this.y = y
+        this.id = projectileId
+
+        this.vY = 5 //velocity
+        this.c = 'red' // color
+        this.R = 5 // circle radius
+        this.stop = false
+    }
+
+    update(){
+
+        if (this.y > 5) {
+
+            this.y -= this.vY
+        }
+
+        else
+        {
+            p = p.filter(element=>element.id != this.id)
+        }
+    }
+
+    draw(){
+
+        ctx.fillStyle = this.c;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.R, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+}
+
+
 //render
 function render(){
 
     ctx.clearRect(0,0,W,H)
+
+    ctx.drawImage(model.background,0,0)
 
     getFrame()
 
@@ -249,7 +368,7 @@ function render(){
 
             if(X < W-60)
             {
-                X+= speed
+                X+= playerSpeed
             }   
         }
 
@@ -257,35 +376,30 @@ function render(){
             
             if (X > 10)
             {
-                X-= speed
+                X-= playerSpeed
             }
         }
 
-        ctx.drawImage(model.activeImages[frame],X,350,50,60)
+        ctx.drawImage(model.activeImages[frame],X,H-50,40,50)
 
-}
+        b.forEach(function (ball) {
+            ball.draw();
+        })
 
-function createBalls(){
+        b.forEach(ball=> {
+            ball.update();
+        })
 
-     // setup as many balls as wanted
-        for (let i = 0; i < 10; i++) {
-            let R = Math.floor(Math.random() * 256);
-            let G = Math.floor(Math.random() * 256);
-            let B = Math.floor(Math.random() * 256);
-            let color = `rgb(${R},${G},${B})`; // random color
+        if(p.length != 0){
 
-            // random position (inside Canvas)
-            let xInit = 20 + Math.random() * (W - 2 * 20);
-            
-            // random direction
-            let direction = Math.random() * 2 * Math.PI;
+            p.forEach(function (projectile) {
+                projectile.draw();
+            })
 
-            balls.push(new Ball(xInit, 30, 10, direction, color))
+            p.forEach(projectile=>{
+                projectile.update()
+            })
         }
 
 }
 
-function renderBalls(){
-    
-    balls[0].draw
-}
