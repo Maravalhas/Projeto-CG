@@ -5,9 +5,10 @@ const ctx = canvas.getContext("2d")
 const W = canvas.width
 const H = canvas.height
 
+const groundH = H * 0.125
+
 let X = 0
 let Y = 0
-
 
 export default class Model {
 
@@ -81,7 +82,7 @@ class Balls {
 
         this.x = x;
         this.y = y;
-        this.id = b.length
+        this.id = ballId
 
         this.vY = v; //velocity
         this.c = c; // color
@@ -91,7 +92,7 @@ class Balls {
     }
     
     update(){
-        if (this.y < H - this.R) {
+        if (this.y < H - groundH - this.R) {
 
             this.vY += this.a // increase circle velocity in Y
         }
@@ -112,7 +113,9 @@ class Balls {
         ctx.stroke()
     }
    
-    
+    testDamage(){
+
+    }
 }
 
 //Ball Creation
@@ -131,7 +134,7 @@ function createBalls(){
         let velocity = 1 + Math.random() * 5;
 
         b.push(new Balls(xInit, 30, 20, 'Red', velocity))
-
+        
         ballId++
     }
 }
@@ -277,7 +280,7 @@ function getFrame(){
 
             if(frame == 4 && p.length < 3){
                         
-                p.push(new Projectile(X+20,H-50))
+                p.push(new Projectile(X+20,characterHeight))
                 projectileId ++
             }
         }
@@ -371,10 +374,15 @@ class Projectile{
 
             if(totalDistance < ball.R + this.R){
                 if(ball.R > 5){
-                    b.push(new Balls(ball.x+20, ball.y, ball.R/2, 'Red', ball.vY))
-                    b.push(new Balls(ball.x-20, ball.y, ball.R/2,'Red', ball.vY))
-                    b = b.filter(obj=>obj.id != ball.id)
+                    
                     p = p.filter(obj=>obj.id != this.id)
+                    
+                    b.push(new Balls(ball.x+20, ball.y, ball.R/2, 'Red', ball.vY))
+                    ballId++
+                    b.push(new Balls(ball.x-20, ball.y, ball.R/2,'Red', ball.vY))
+                    ballId++
+
+                    b = b.filter(obj=>obj.id != ball.id)
                 }
                 else{
                     b = b.filter(obj=>obj.id != ball.id)
@@ -386,6 +394,8 @@ class Projectile{
     }
 }
 
+
+let characterHeight = H - groundH
 
 //render
 function render(){
@@ -400,7 +410,7 @@ function render(){
         //Draw Character Oriented
         if(right == true  && attack == false){
 
-            if(X < W-60)
+            if(X < W-40)
             {
                 X+= playerSpeed
             }   
@@ -414,7 +424,7 @@ function render(){
             }
         }
 
-        ctx.drawImage(model.activeImages[frame],X,H-50,40,50)
+        ctx.drawImage(model.activeImages[frame],X,characterHeight-40,40,50)
 
 
         //Draw Balls
