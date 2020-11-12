@@ -108,6 +108,8 @@ class Balls {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.R, 0, 2 * Math.PI);
         ctx.fill();
+        ctx.fillStyle = 'black';
+        ctx.stroke()
     }
    
     
@@ -126,7 +128,7 @@ function createBalls(){
         let xInit = 20 + Math.random() * (W - 2 * 20);
         
         // random velocity
-        let velocity = 1 + Math.random() * 3;
+        let velocity = 1 + Math.random() * 5;
 
         b.push(new Balls(xInit, 30, 20, 'Red', velocity))
 
@@ -273,14 +275,15 @@ function getFrame(){
                 default: break;
             } 
 
-            if(frame == 4){
+            if(frame == 4 && p.length < 3){
                         
-                p.push(new Projectile(X,H-60))
+                p.push(new Projectile(X+20,H-50))
                 projectileId ++
             }
         }
     }
 }
+
 
 //Action Detection
 window.addEventListener('keydown',keyPressed)
@@ -322,12 +325,13 @@ let p = new Array()
 class Projectile{
 
     constructor(x,y){
+
         this.x = x
         this.y = y
         this.id = projectileId
 
-        this.vY = 5 //velocity
-        this.c = 'red' // color
+        this.vY = 10 //velocity
+        this.c = '#0066ff' // color
         this.R = 5 // circle radius
         this.stop = false
     }
@@ -339,9 +343,9 @@ class Projectile{
             this.y -= this.vY
         }
 
-        else
-        {
-            p = p.filter(element=>element.id != this.id)
+        else{
+
+            p = p.filter(obj=>obj.id != this.id)
         }
     }
 
@@ -351,6 +355,34 @@ class Projectile{
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.R, 0, 2 * Math.PI);
         ctx.fill();
+        ctx.fillStyle = 'black';
+        ctx.stroke()
+    }
+
+    testColision(){
+
+        b.forEach(ball=>{
+            let xdistance = (ball.x < this.x ? ball.x - this.x : this.x - ball.x)
+            let ydistance = (ball.y < this.y ? this.y - ball.y : ball.y - this.y)
+
+            console.log(xdistance,ydistance)
+
+            let totalDistance = Math.sqrt((xdistance*xdistance) + (ydistance*ydistance))
+
+            if(totalDistance < ball.R + this.R){
+                if(ball.R > 5){
+                    b.push(new Balls(ball.x+20, ball.y, ball.R/2, 'Red', ball.vY))
+                    b.push(new Balls(ball.x-20, ball.y, ball.R/2,'Red', ball.vY))
+                    b = b.filter(obj=>obj.id != ball.id)
+                    p = p.filter(obj=>obj.id != this.id)
+                }
+                else{
+                    b = b.filter(obj=>obj.id != ball.id)
+                    p = p.filter(obj=>obj.id != this.id)
+                }
+            }
+        })
+
     }
 }
 
@@ -362,8 +394,10 @@ function render(){
 
     ctx.drawImage(model.background,0,0)
 
-    getFrame()
+        getFrame()
 
+
+        //Draw Character Oriented
         if(right == true  && attack == false){
 
             if(X < W-60)
@@ -382,14 +416,20 @@ function render(){
 
         ctx.drawImage(model.activeImages[frame],X,H-50,40,50)
 
+
+        //Draw Balls
         b.forEach(function (ball) {
             ball.draw();
         })
 
+
+        //Bounce Balls
         b.forEach(ball=> {
             ball.update();
         })
 
+
+        //Attacking Situations 
         if(p.length != 0){
 
             p.forEach(function (projectile) {
@@ -399,7 +439,10 @@ function render(){
             p.forEach(projectile=>{
                 projectile.update()
             })
+
+            p.forEach(projectile=>{
+                projectile.testColision()
+            })
         }
 
 }
-
