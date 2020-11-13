@@ -78,22 +78,23 @@ const model = new Model()
 
 
 class Balls {
+
     constructor(x, y, r, c, v) {
 
-        this.x = x;
-        this.y = y;
+        this.x = x
+        this.y = y
         this.id = ballId
 
         this.v = v
-        this.dX = 5 * Math.cos(v);
-        this.dY = 5 * Math.sin(v);
+        this.dX = 5 * Math.cos(v)
+        this.dY = 5 * Math.sin(v)
         this.aX = 1
         this.aY = 1
 
-        this.c = c; // color
-        this.R = r; // circle radius
+        this.c = c // color
+        this.R = r // circle radius
         this.a = 0.9
-        this.stop=false;
+        this.stop=false
     }
     
     update(){
@@ -154,10 +155,6 @@ class Balls {
     }
    
     testDamage(){
-
-        if(this.x <1){
-
-        }
     }    
 }
 
@@ -410,7 +407,7 @@ class Projectile{
 
             if(ball.x + ball.R < this.x){
                 
-                if(this.x - ball.x < ball.R && this.y < ball.y){
+                if(this.x - ball.x < ball.R && this.y < ball.y && ball.y < characterHeight){
 
                     if(ball.R > 5){
                         
@@ -431,7 +428,7 @@ class Projectile{
 
             if(ball.x + ball.R > this.x){
                 
-                if(ball.x - this.x < ball.R && this.y < ball.y){
+                if(ball.x - this.x < ball.R && this.y < ball.y && ball.y < characterHeight){
 
                     if(ball.R > 5){
                         
