@@ -5,7 +5,7 @@ const ctx = canvas.getContext("2d")
 const W = canvas.width
 const H = canvas.height
 
-const groundH = H * 0.125
+const groundH = H * 0.100
 
 let X = 0
 let Y = 0
@@ -84,7 +84,12 @@ class Balls {
         this.y = y;
         this.id = ballId
 
-        this.vY = v; //velocity
+        this.v = v
+        this.dX = 5 * Math.cos(v);
+        this.dY = 5 * Math.sin(v);
+        this.aX = 1
+        this.aY = 1
+
         this.c = c; // color
         this.R = r; // circle radius
         this.a = 0.9
@@ -92,16 +97,51 @@ class Balls {
     }
     
     update(){
-        if (this.y < H - groundH - this.R) {
 
-            this.vY += this.a // increase circle velocity in Y
+        //Check X
+
+        if (this.x + this.dX*this.aX < this.R) {
+
+            this.x = this.R
+            this.dX = -this.dX 
+            this.aX = 1
+        }
+
+        else if (this.x + this.dX*this.aX > W - this.R){
+
+            this.x = W - this.R
+            this.dX = -this.dX 
+            this.aX = 1
         }
 
         else{
-            this.vY = -this.vY
+
+            this.aX += 0.02
+            this.x += this.dX*this.aX
         }
 
-        this.y += this.vY
+        //Check Y
+
+        if(this.y + this.dY*this.aY < this.R){
+
+            this.y = this.R
+            this.dY = -this.dY 
+            this.aY = 1
+        }
+
+        else if(this.y + this.dY*this.aY > H - groundH - this.R){
+
+            this.y = H - groundH - this.R
+            this.dY = -this.dY 
+            this.aY = 1 
+        }
+        
+        else{
+
+            this.aY += 0.02
+            this.y += this.dY*this.aY
+        }
+
     }
 
     draw() {
@@ -115,7 +155,10 @@ class Balls {
    
     testDamage(){
 
-    }
+        if(this.x <1){
+
+        }
+    }    
 }
 
 //Ball Creation
@@ -131,9 +174,9 @@ function createBalls(){
         let xInit = 20 + Math.random() * (W - 2 * 20);
         
         // random velocity
-        let velocity = 1 + Math.random() * 5;
+        let velocity = Math.random() * 2 * Math.PI
 
-        b.push(new Balls(xInit, 30, 20, 'Red', velocity))
+        b.push(new Balls(xInit, 50, 20, 'Red', velocity))
         
         ballId++
     }
@@ -278,8 +321,8 @@ function getFrame(){
                 default: break;
             } 
 
-            if(frame == 4 && p.length < 3){
-                        
+            if(frame == 4 && p.length < 1){
+                
                 p.push(new Projectile(X+20,characterHeight))
                 projectileId ++
             }
@@ -343,7 +386,7 @@ class Projectile{
 
         if (this.y > 5) {
 
-            this.y -= this.vY
+            this.y -= 20
         }
 
         else{
@@ -355,38 +398,55 @@ class Projectile{
     draw(){
 
         ctx.fillStyle = this.c;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.R, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.fillStyle = 'black';
+        ctx.beginPath()
+        ctx.moveTo(this.x,characterHeight)
+        ctx.lineTo(this.x,this.y)
         ctx.stroke()
     }
 
     testColision(){
 
         b.forEach(ball=>{
-            let xdistance = (ball.x < this.x ? ball.x - this.x : this.x - ball.x)
-            let ydistance = (ball.y < this.y ? this.y - ball.y : ball.y - this.y)
 
-            console.log(xdistance,ydistance)
+            if(ball.x + ball.R < this.x){
+                
+                if(this.x - ball.x < ball.R && this.y < ball.y){
 
-            let totalDistance = Math.sqrt((xdistance*xdistance) + (ydistance*ydistance))
+                    if(ball.R > 5){
+                        
+                        p = p.filter(obj=>obj.id != this.id)
+                        b.push(new Balls(ball.x + 20, ball.y, ball.R/2, 'Red', ball.v * Math.random()*6))
+                        ballId++
+                        b.push(new Balls(ball.x - 20, ball.y, ball.R/2,'Red', ball.v * Math.random()*6))
+                        ballId++
 
-            if(totalDistance < ball.R + this.R){
-                if(ball.R > 5){
-                    
-                    p = p.filter(obj=>obj.id != this.id)
-                    
-                    b.push(new Balls(ball.x+20, ball.y, ball.R/2, 'Red', ball.vY))
-                    ballId++
-                    b.push(new Balls(ball.x-20, ball.y, ball.R/2,'Red', ball.vY))
-                    ballId++
-
-                    b = b.filter(obj=>obj.id != ball.id)
+                        b = b.filter(obj=>obj.id != ball.id)
+                    }
+                    else{
+                        p = p.filter(obj=>obj.id != this.id)
+                        b = b.filter(obj=>obj.id != ball.id)
+                    }
                 }
-                else{
-                    b = b.filter(obj=>obj.id != ball.id)
-                    p = p.filter(obj=>obj.id != this.id)
+            }
+
+            if(ball.x + ball.R > this.x){
+                
+                if(ball.x - this.x < ball.R && this.y < ball.y){
+
+                    if(ball.R > 5){
+                        
+                        p = p.filter(obj=>obj.id != this.id)
+                        b.push(new Balls(ball.x + 20, ball.y, ball.R/2, 'Red', ball.v * Math.random()*6))
+                        ballId++
+                        b.push(new Balls(ball.x - 20, ball.y, ball.R/2,'Red', ball.v * Math.random()*6))
+                        ballId++
+
+                        b = b.filter(obj=>obj.id != ball.id)
+                    }
+                    else{
+                        p = p.filter(obj=>obj.id != this.id)
+                        b = b.filter(obj=>obj.id != ball.id)
+                    }
                 }
             }
         })
@@ -395,7 +455,7 @@ class Projectile{
 }
 
 
-let characterHeight = H - groundH
+let characterHeight = H - groundH -50
 
 //render
 function render(){
@@ -424,18 +484,22 @@ function render(){
             }
         }
 
-        ctx.drawImage(model.activeImages[frame],X,characterHeight-40,40,50)
+        ctx.drawImage(model.activeImages[frame],X,characterHeight,40,50)
 
 
         //Draw Balls
         b.forEach(function (ball) {
-            ball.draw();
+            ball.draw()
         })
 
 
         //Bounce Balls
         b.forEach(ball=> {
-            ball.update();
+            ball.update()
+        })
+
+        b.forEach(ball=>{
+            ball.testDamage()
         })
 
 
@@ -443,7 +507,7 @@ function render(){
         if(p.length != 0){
 
             p.forEach(function (projectile) {
-                projectile.draw();
+                projectile.draw()
             })
 
             p.forEach(projectile=>{
