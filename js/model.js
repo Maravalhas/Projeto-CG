@@ -1,14 +1,4 @@
-//Canvas Indentity
-const canvas = document.querySelector('#canvas')
-const ctx = canvas.getContext("2d")
-
-const W = canvas.width
-const H = canvas.height
-
-const groundH = H * 0.100
-
-let X = 0
-let Y = 0
+//Images Model
 
 export default class Model {
 
@@ -64,12 +54,10 @@ export default class Model {
             this.attackRightImages[i].src= `../sprites/attackright/attack-right-${i}.png`
         }
 
-        //hurt
+        //health
 
-        for (let i = 1; i != 20; i++)
-        {
-            
-        }
+        this.heartImage = new Image()
+        this.heartImage.src = "../heart.png"
     }
 
 } 
@@ -77,71 +65,80 @@ const model = new Model()
 
 
 
+//Canvas Indentity
+const canvas = document.querySelector('#canvas')
+const ctx = canvas.getContext("2d")
+
+const W = canvas.width
+const H = canvas.height
+
+const groundH = H * 0.110
+
+let X = 0
+let Y = H - groundH - 50
+
+
+let healthPoints = 3
+
+let level = 0
+
+
+//Ball Creation
+
+let b = new Array()
+
+function getBallId(){
+
+    return b.length ? b[b.length -1].id + 1 : 1
+}
+
 class Balls {
 
     constructor(x, y, r, c, v) {
 
         this.x = x
         this.y = y
-        this.id = ballId
+        this.id = getBallId()
 
         this.v = v
-        this.dX = 5 * Math.cos(v)
-        this.dY = 5 * Math.sin(v)
-        this.aX = 1
+        this.dX = 8 * Math.cos(v)
+        this.dY = 8 * Math.sin(v)
         this.aY = 1
 
         this.c = c // color
         this.R = r // circle radius
-        this.a = 0.9
         this.stop=false
+        this.ballHit = true
     }
     
     update(){
 
         //Check X
 
-        if (this.x + this.dX*this.aX < this.R) {
+        if (this.x < this.R) {
 
-            this.x = this.R
             this.dX = -this.dX 
-            this.aX = 1
         }
 
-        else if (this.x + this.dX*this.aX > W - this.R){
+        else if (this.x > W - this.R){
 
-            this.x = W - this.R
             this.dX = -this.dX 
-            this.aX = 1
         }
 
-        else{
-
-            this.aX += 0.02
-            this.x += this.dX*this.aX
-        }
+        this.x += this.dX
 
         //Check Y
 
-        if(this.y + this.dY*this.aY < this.R){
+        if (this.y >= H - groundH - this.R){
 
-            this.y = this.R
-            this.dY = -this.dY 
-            this.aY = 1
+            this.dY = -this.dY
         }
-
-        else if(this.y + this.dY*this.aY > H - groundH - this.R){
-
-            this.y = H - groundH - this.R
-            this.dY = -this.dY 
-            this.aY = 1 
-        }
-        
         else{
 
-            this.aY += 0.02
-            this.y += this.dY*this.aY
+            this.dY += this.aY
         }
+        
+        this.y += this.dY
 
     }
 
@@ -155,27 +152,62 @@ class Balls {
     }
    
     testDamage(){
+
+        let playerCenterX = X + 20
+        let playerCenterY = Y + 25
+        let playerRadio = 20
+
+        let xdistance = 0
+        let ydistance = 0
+        let distance = 0
+
+        xdistance = (this.x <= playerCenterX) ? (playerCenterX - this.x) : (this.x - playerCenterX) 
+            
+        ydistance = (this.y <= playerCenterY) ? (playerCenterY - this.y) : (this.y - playerCenterY) 
+
+        distance = Math.sqrt((xdistance * xdistance) + (ydistance * ydistance))
+
+
+        if(this.ballHit){
+
+            this.ballHit = distance > playerRadio + this.R ? false : true
+        }
+
+        else{
+
+            if(distance <= playerRadio + this.R){
+                healthPoints -= 1
+                this.ballHit = true
+            }
+        }
     }    
 }
 
-//Ball Creation
-let b = new Array()
-let ballId = 1
-createBalls();
-
 function createBalls(){
 
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 1 + level; i++) {
 
+        let xInit
         // random position
-        let xInit = 20 + Math.random() * (W - 2 * 20);
+        if(b.length == 0){
+
+            xInit = 20 + Math.random() * (W - 20)
+        } else{
+
+            b.forEach(ball=>{
+
+                while(!(ball.x < xInit - 40 || ball.x > xInit + 40)){
+
+                    xInit = 20 + Math.random() * (W - 20)
+                }
+
+            })
+        }
         
         // random velocity
-        let velocity = Math.random() * 2 * Math.PI
+        let velocity = 0.2 * Math.PI
 
         b.push(new Balls(xInit, 50, 20, 'Red', velocity))
-        
-        ballId++
     }
 }
 
@@ -191,8 +223,6 @@ let direction = "right"
 let state = "idle"
 let frame = 1
 let attack = false
-
-let projectileId = 1
 
 //Set Movement Frames/States
 function getFrame(){
@@ -320,8 +350,7 @@ function getFrame(){
 
             if(frame == 4 && p.length < 1){
                 
-                p.push(new Projectile(X+20,characterHeight))
-                projectileId ++
+                p.push(new Projectile(X+20,Y))
             }
         }
     }
@@ -329,6 +358,7 @@ function getFrame(){
 
 
 //Action Detection
+
 window.addEventListener('keydown',keyPressed)
 window.addEventListener('keyup',keyLeft)
 window.addEventListener('click',event=>{attack = true; frame = 1})
@@ -353,15 +383,7 @@ function keyLeft(e){
 }
 
 
-
-//Set Animation
-window.onload = function(){
-
-    setInterval(render,1000/20)
-}
-
-
-//create Projectiles
+//create Projectile
 
 let p = new Array()
 
@@ -371,7 +393,6 @@ class Projectile{
 
         this.x = x
         this.y = y
-        this.id = projectileId
 
         this.vY = 10 //velocity
         this.c = '#0066ff' // color
@@ -383,7 +404,7 @@ class Projectile{
 
         if (this.y > 5) {
 
-            this.y -= 20
+            this.y -= 25
         }
 
         else{
@@ -396,9 +417,24 @@ class Projectile{
 
         ctx.fillStyle = this.c;
         ctx.beginPath()
-        ctx.moveTo(this.x,characterHeight)
+        ctx.moveTo(this.x,Y)
         ctx.lineTo(this.x,this.y)
         ctx.stroke()
+    }
+
+    pushNewBalls(ball){
+
+        p = []
+        b.push(new Balls(ball.x + 30 > W - ball.R ? W - ball.R : ball.x + 30, ball.y - 40 < ball.R ? ball.R : ball.y - 40, ball.R/2, 'Red', 0.2 * Math.PI))
+        b.push(new Balls(ball.x - 30 < ball.R ? ball.R : ball.x + 30, ball.y - 40 < ball.R ? ball.R : ball.y - 40, ball.R/2,'Red', Math.PI - 0.2 * Math.PI))
+
+        b = b.filter(obj=>obj.id != ball.id)
+    }
+
+    destroyBall(ball){
+
+        p = []
+        b = b.filter(obj=>obj.id != ball.id)
     }
 
     testColision(){
@@ -407,42 +443,29 @@ class Projectile{
 
             if(ball.x + ball.R < this.x){
                 
-                if(this.x - ball.x < ball.R && this.y < ball.y && ball.y < characterHeight){
+                if(this.x - ball.x < ball.R && this.y < ball.y && ball.y < Y){
 
                     if(ball.R > 5){
                         
-                        p = p.filter(obj=>obj.id != this.id)
-                        b.push(new Balls(ball.x + 20, ball.y, ball.R/2, 'Red', ball.v * Math.random()*6))
-                        ballId++
-                        b.push(new Balls(ball.x - 20, ball.y, ball.R/2,'Red', ball.v * Math.random()*6))
-                        ballId++
-
-                        b = b.filter(obj=>obj.id != ball.id)
+                        this.pushNewBalls(ball)
                     }
                     else{
-                        p = p.filter(obj=>obj.id != this.id)
-                        b = b.filter(obj=>obj.id != ball.id)
+                        
+                        this.destroyBall(ball)
                     }
                 }
             }
 
             if(ball.x + ball.R > this.x){
                 
-                if(ball.x - this.x < ball.R && this.y < ball.y && ball.y < characterHeight){
+                if(ball.x - this.x < ball.R && this.y < ball.y && ball.y < Y){
 
                     if(ball.R > 5){
                         
-                        p = p.filter(obj=>obj.id != this.id)
-                        b.push(new Balls(ball.x + 20, ball.y, ball.R/2, 'Red', ball.v * Math.random()*6))
-                        ballId++
-                        b.push(new Balls(ball.x - 20, ball.y, ball.R/2,'Red', ball.v * Math.random()*6))
-                        ballId++
-
-                        b = b.filter(obj=>obj.id != ball.id)
+                        this.pushNewBalls(ball)
                     }
                     else{
-                        p = p.filter(obj=>obj.id != this.id)
-                        b = b.filter(obj=>obj.id != ball.id)
+                        this.destroyBall(ball)
                     }
                 }
             }
@@ -452,18 +475,33 @@ class Projectile{
 }
 
 
-let characterHeight = H - groundH -50
+//Set Animation
+window.onload = function(){
+
+    setInterval(render,1000/25)
+}
 
 //render
 function render(){
 
     ctx.clearRect(0,0,W,H)
 
-    ctx.drawImage(model.background,0,0)
+    ctx.drawImage(model.background,0,0,W,H)
+    
+    for(let i = 0; i < healthPoints; i++){
 
-        getFrame()
+        ctx.drawImage(model.heartImage, 10 + i * 40, 10, 35, 30)
+    }
 
+    getFrame()
 
+    if(b.length == 0){
+
+        level++
+        createBalls()
+    }
+
+        
         //Draw Character Oriented
         if(right == true  && attack == false){
 
@@ -481,24 +519,22 @@ function render(){
             }
         }
 
-        ctx.drawImage(model.activeImages[frame],X,characterHeight,40,50)
-
+        ctx.drawImage(model.activeImages[frame],X,Y,40,50)
 
         //Draw Balls
         b.forEach(function (ball) {
             ball.draw()
         })
 
-
         //Bounce Balls
         b.forEach(ball=> {
             ball.update()
         })
 
+        //Test Ball-Character Colision
         b.forEach(ball=>{
             ball.testDamage()
         })
-
 
         //Attacking Situations 
         if(p.length != 0){
@@ -515,5 +551,7 @@ function render(){
                 projectile.testColision()
             })
         }
+
+        
 
 }
