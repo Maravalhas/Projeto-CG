@@ -72,9 +72,6 @@ const W = canvas.width
 const H = canvas.height
 
 let alpha = 1
-let date = new Date()
-let startTime = [date.getMinutes(),date.getSeconds()]
-let endTime
 
 let levelUpFrame = 0
 
@@ -121,12 +118,12 @@ class Balls {
 
         //Check X
 
-        if (this.x <= this.R) {
+        if (this.x <= this.R + 5) {
 
             this.dX = -this.dX 
         }
 
-        else if (this.x >= W - this.R){
+        else if (this.x >= W - this.R - 5){
 
             this.dX = -this.dX 
         }
@@ -375,7 +372,6 @@ function keyPressed(e){
     switch(e.key){
         case 'a': {left = true; direction="left"; break;}
         case 'd': {right = true; direction="right"; break;}
-        case 'Escape' :{confirm("Quer mesmo Sair?") ? window.location.replace('../html/landing_page.html') : ""}
         default: break;
     }
 }
@@ -432,8 +428,8 @@ class Projectile{
     pushNewBalls(ball){
 
         p = []
-        b.push(new Balls(ball.x + 30 > W - ball.R ? W - ball.R : ball.x + 30, ball.y - 40 < ball.R ? ball.R : ball.y - 40, ball.R/2, 'Red', 0.2 * Math.PI))
-        b.push(new Balls(ball.x - 30 < ball.R ? ball.R : ball.x + 30, ball.y - 40 < ball.R ? ball.R : ball.y - 40, ball.R/2,'Red', Math.PI - 0.2 * Math.PI))
+        b.push(new Balls(ball.x + 30 > W - ball.R - 5 ? W - ball.R - 5 : ball.x + 30, ball.y - 40 < ball.R ? ball.R : ball.y - 40, ball.R/2, 'Red', 0.2 * Math.PI))
+        b.push(new Balls(ball.x - 30 < ball.R + 5 ? ball.R + 5 : ball.x + 30, ball.y - 40 < ball.R ? ball.R : ball.y - 40, ball.R/2,'Red', Math.PI - 0.2 * Math.PI))
 
         b = b.filter(obj=>obj.id != ball.id)
     }
@@ -540,7 +536,7 @@ function render(){
                     ctx.drawImage(model.heartImage, 10 + i * 40, 10, 35, 30)
                 }
 
-                ctx.fillStyle = "black"
+                ctx.fillStyle = "red"
                 ctx.font = "50px Castoro"
                 ctx.fillText("LEVEL UP", W/2 - 100, levelUpFrame)
             }
@@ -590,11 +586,11 @@ function render(){
                 ctx.font = "25px Castoro";
                 ctx.fillText("(Space for Home)", W/2 - 100, H/2 + 200);
 
-                if(alpha < 0.4){
+                if(alpha < 0.2){
                     window.addEventListener('keydown',function(e){
 
-                        if(e.key== " "){
-                            location.reload()
+                        if(e.key == " "){
+                            location.replace("../html/landing_page.html")
                         }
                     })
                 }
@@ -603,11 +599,6 @@ function render(){
         }
 
         case "win":{
-
-            if(!endTime){
-
-                endTime = [date.getMinutes(),date.getSeconds()]
-            }
 
             if(alpha > 0.2){
                 alpha -= 0.01
@@ -628,7 +619,7 @@ function render(){
                 ctx.fillStyle = "black";
 
                 ctx.font = "35px Castoro";
-                ctx.fillText(`In Just ${endTime[0] - startTime[0]}:${endTime[1] - startTime[1]} Minutes With ${healthPoints} Lifes` , W/2 - 200, H/2 + 75);
+                ctx.fillText(`With ${healthPoints} Lifes` , W/2 - 100, H/2 + 75);
 
                 ctx.font = "25px Castoro";
                 ctx.fillText("(Space for Home)", W/2 - 100, H/2 + 150);
@@ -637,7 +628,7 @@ function render(){
                     window.addEventListener('keydown',function(e){
 
                         if(e.key== " "){
-                            location.reload()
+                            location.replace("../html/landing_page.html")
                         }
                     })
                 }
