@@ -375,6 +375,7 @@ function keyPressed(e){
     switch(e.key){
         case 'a': {left = true; direction="left"; break;}
         case 'd': {right = true; direction="right"; break;}
+        case 'Escape' :{confirm("Quer mesmo Sair?") ? window.location.replace('../html/landing_page.html') : ""}
         default: break;
     }
 }
@@ -589,7 +590,7 @@ function render(){
                 ctx.font = "25px Castoro";
                 ctx.fillText("(Space for Home)", W/2 - 100, H/2 + 200);
 
-                if(alpha < 0.2){
+                if(alpha < 0.4){
                     window.addEventListener('keydown',function(e){
 
                         if(e.key== " "){

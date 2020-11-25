@@ -4,3 +4,110 @@
     width: 80%;
 
 }
+
+@keyframes dropdown{
+    0%{transform:translateY(-250px);}
+    100%{transform:translateY(0);}
+}
+.p{
+    animation:dropdown 1s ease; 
+    animation-fill-mode: forwards;
+
+}
+.a{
+    animation:dropdown 1s ease; 
+    animation-fill-mode: forwards;
+animation-delay: 0.25s;
+}
+.n{
+    animation:dropdown 1s ease; 
+    animation-fill-mode: forwards;
+    animation-delay: 0.5s;
+
+}
+.g{
+    animation:dropdown 1s ease; 
+    animation-fill-mode: forwards;
+    animation-delay: 0.75s;
+
+}
+.s{
+    animation:dropdown 1s ease; 
+    animation-fill-mode: forwards;
+    animation-delay: 1s;
+
+}
+.u{
+    animation:dropdown 1s ease; 
+    animation-fill-mode: forwards;
+    animation-delay: 1.25s;
+
+}
+.p2{
+    animation:dropdown 1s ease; 
+    animation-fill-mode: forwards;
+    animation-delay: 1.5s;
+
+}
+.r{
+    animation:dropdown 1s ease; 
+    animation-fill-mode: forwards;
+    animation-delay: 1.75s;
+
+}
+.e{
+    animation:dropdown 1s ease; 
+    animation-fill-mode: forwards;
+    animation-delay: 2s;
+
+}
+.m{
+    animation:dropdown 1s ease; 
+    animation-fill-mode: forwards;
+    animation-delay: 2.25s;
+
+}
+.e2{
+    animation:dropdown 1s ease; 
+    animation-fill-mode: forwards;
+    animation-delay: 2.5s;
+
+}
+.ponto{
+    animation:dropdown 1s ease; 
+    animation-fill-mode: forwards;
+    animation-delay: 2.75s;
+
+}
+
+@keyframes sideRight{
+    0%
+    {
+        opacity:1;
+        transform:translateX(-250px);
+    }
+    100%
+    {
+        opacity:1;
+        transform:translateX(0);
+    }
+}
+
+.play{
+    opacity:0;
+    animation:sideRight 1s ease;
+    animation-fill-mode: forwards;
+    animation-delay: 3.5s;
+}
+.exit{
+    opacity: 0;
+    animation:sideRight 1s ease;
+    animation-fill-mode: forwards;
+    animation-delay: 4.0s;
+}
+.controls{
+    opacity: 0;
+    animation:sideRight 1s ease;
+    animation-fill-mode: forwards;
+    animation-delay: 4.5s;
+}
