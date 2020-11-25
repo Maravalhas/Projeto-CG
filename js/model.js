@@ -76,6 +76,8 @@ let date = new Date()
 let startTime = [date.getMinutes(),date.getSeconds()]
 let endTime
 
+let levelUpFrame = 0
+
 const groundH = H * 0.110
 
 let X = 0
@@ -195,14 +197,14 @@ function createBalls(){
         // random position
         if(b.length == 0){
 
-            xInit = 20 + Math.random() * (W - 20)
+            xInit = 30 + Math.random() * (W - 30)
         } else{
 
             b.forEach(ball=>{
 
                 while(!(ball.x < xInit - 40 || ball.x > xInit + 40)){
 
-                    xInit = 20 + Math.random() * (W - 20)
+                    xInit = 30 + Math.random() * (W - 30)
                 }
 
             })
@@ -488,163 +490,223 @@ window.onload = function(){
 //render
 function render(){
 
-    if(healthPoints > 0 && level < 3){
+    let state = ""
 
-        ctx.clearRect(0,0,W,H)
-        ctx.drawImage(model.background,0,0,W,H)
-        
-        for(let i = 0; i < healthPoints; i++){
+    //Test Lose
 
-            ctx.drawImage(model.heartImage, 10 + i * 40, 10, 35, 30)
-        }
+    state = healthPoints < 1 ? "lose" : state
 
-        getFrame()
+    //Test Level Up
 
-        if(b.length == 0 && level < 3){
+    if(b.length == 0 && level == 0){
+
+        state = "start"
+
+    } else if(b.length == 0){
+
+        state = "levelUp"
+    }
+
+    //Test Win
+
+    if(b.length == 0 && level == 2){state = "win"}
+
+    state = state == "" ? "render" : state
+    
+
+
+    switch(state){
+
+        case "start":{
 
             level++
             createBalls()
+
+            break
         }
 
-            //Draw Character Oriented
-            if(right == true  && attack == false){
+        case "levelUp": {
 
-                if(X < W-40)
-                {
-                    X+= playerSpeed
-                }   
-            }
+            if(levelUpFrame <= H){
 
-            if(left == true && attack == false){
-                
-                if (X > 10)
-                {
-                    X-= playerSpeed
+                levelUpFrame += 15
+                ctx.clearRect(0,0,W,H)
+                ctx.drawImage(model.background,0,0,W,H)
+                ctx.drawImage(model.activeImages[2],X,Y,40,50)
+
+                for(let i = 0; i < healthPoints; i++){
+
+                    ctx.drawImage(model.heartImage, 10 + i * 40, 10, 35, 30)
                 }
+
+                ctx.fillStyle = "black"
+                ctx.font = "50px Castoro"
+                ctx.fillText("LEVEL UP", W/2 - 100, levelUpFrame)
+            }
+            else{
+
+                level++
+                createBalls()
             }
 
-            ctx.drawImage(model.activeImages[frame],X,Y,40,50)
-
-            //Draw Balls
-            b.forEach(function (ball) {
-                ball.draw()
-            })
-
-            //Bounce Balls
-            b.forEach(ball=> {
-                ball.update()
-            })
-
-            //Test Ball-Character Colision
-            b.forEach(ball=>{
-                ball.testDamage()
-            })
-
-            //Attacking Situations 
-            if(p.length != 0){
-
-                p.forEach(function (projectile) {
-                    projectile.draw()
-                })
-
-                p.forEach(projectile=>{
-                    projectile.update()
-                })
-
-                p.forEach(projectile=>{
-                    projectile.testColision()
-                })
-            }
-
-    }
-
-    //Case Health Ends
-
-    else if(healthPoints == 0){
-
-        if(alpha > 0.2){
-            alpha -= 0.01
+            break
         }
+
+        case "lose":{
+
+            if(alpha > 0.2){
+                alpha -= 0.01
+            }
+
+                ctx.clearRect(0,0,W,H)
+
+                ctx.globalAlpha = alpha
+                ctx.drawImage(model.background,0,0,W,H)
+                ctx.drawImage(model.activeImages[2],X,Y,40,50)
+
+                for(let i = 0; i < healthPoints; i++){
+
+                    ctx.drawImage(model.heartImage, 10 + i * 40, 10, 35, 30)
+                }
+
+                //Draw Balls
+                b.forEach(function (ball) {
+                    ball.draw()
+                })
+
+                //Bounce Balls
+                b.forEach(ball=> {
+                    ball.update()
+                })
+
+                ctx.globalAlpha = 1 - alpha
+
+                ctx.fillStyle = "red";
+                ctx.font = "100px Castoro";
+                ctx.fillText("You Lose", W/2 - 200, H/2);
+
+                ctx.fillStyle = "black";
+                ctx.font = "25px Castoro";
+                ctx.fillText("(Space for Home)", W/2 - 100, H/2 + 200);
+
+                if(alpha < 0.2){
+                    window.addEventListener('keydown',function(e){
+
+                        if(e.key== " "){
+                            location.reload()
+                        }
+                    })
+                }
+
+            break
+        }
+
+        case "win":{
+
+            if(!endTime){
+
+                endTime = [date.getMinutes(),date.getSeconds()]
+            }
+
+            if(alpha > 0.2){
+                alpha -= 0.01
+            }
+
+                ctx.clearRect(0,0,W,H)
+
+                ctx.globalAlpha = alpha
+                ctx.drawImage(model.background,0,0,W,H)
+                ctx.drawImage(model.activeImages[2],X,Y,40,50)
+
+                ctx.globalAlpha = 1 - alpha
+
+                ctx.fillStyle = "red";
+                ctx.font = "100px Castoro";
+                ctx.fillText("You Win!", W/2 - 200, H/2);
+
+                ctx.fillStyle = "black";
+
+                ctx.font = "35px Castoro";
+                ctx.fillText(`In Just ${endTime[0] - startTime[0]}:${endTime[1] - startTime[1]} Minutes With ${healthPoints} Lifes` , W/2 - 200, H/2 + 75);
+
+                ctx.font = "25px Castoro";
+                ctx.fillText("(Space for Home)", W/2 - 100, H/2 + 150);
+
+                if(alpha < 0.2){
+                    window.addEventListener('keydown',function(e){
+
+                        if(e.key== " "){
+                            location.reload()
+                        }
+                    })
+                }
+
+            break
+        }
+
+        case "render":{
 
             ctx.clearRect(0,0,W,H)
-
-            ctx.globalAlpha = alpha
             ctx.drawImage(model.background,0,0,W,H)
-            ctx.drawImage(model.activeImages[frame],X,Y,40,50)
+            
+            for(let i = 0; i < healthPoints; i++){
 
-            //Draw Balls
-            b.forEach(function (ball) {
-                ball.draw()
-            })
-
-            //Bounce Balls
-            b.forEach(ball=> {
-                ball.update()
-            })
-
-            ctx.globalAlpha = 1 - alpha
-
-            ctx.fillStyle = "red";
-            ctx.font = "100px Castoro";
-            ctx.fillText("You Lose", W/2 - 200, H/2);
-
-            ctx.fillStyle = "black";
-            ctx.font = "25px Castoro";
-            ctx.fillText("(Space for Home)", W/2 - 100, H/2 + 200);
-
-            if(alpha < 0.2){
-                window.addEventListener('keydown',function(e){
-
-                    if(e.key== " "){
-                        location.reload()
-                    }
-                })
+                ctx.drawImage(model.heartImage, 10 + i * 40, 10, 35, 30)
             }
 
-    }else{
+            getFrame()
 
-        if(!endTime){
+                //Draw Character Oriented
+                if(right == true  && attack == false){
 
-            endTime = [date.getMinutes(),date.getSeconds()]
-        }
+                    if(X < W-40)
+                    {
+                        X+= playerSpeed
+                    }   
+                }
 
-        if(alpha > 0.2){
-            alpha -= 0.01
-        }
-
-            ctx.clearRect(0,0,W,H)
-
-            ctx.globalAlpha = alpha
-            ctx.drawImage(model.background,0,0,W,H)
-            ctx.drawImage(model.activeImages[frame],X,Y,40,50)
-
-            ctx.globalAlpha = 1 - alpha
-
-            ctx.fillStyle = "red";
-            ctx.font = "100px Castoro";
-            ctx.fillText("You Win!", W/2 - 200, H/2);
-
-            ctx.fillStyle = "black";
-
-            ctx.font = "35px Castoro";
-            ctx.fillText(`In Just ${startTime[0]-endTime[0]}:${startTime[1]-endTime[1]} Minutes`, W/2 - 150, H/2 + 75);
-
-            ctx.font = "25px Castoro";
-            ctx.fillText("(Space for Home)", W/2 - 100, H/2 + 150);
-
-            if(alpha < 0.2){
-                window.addEventListener('keydown',function(e){
-
-                    if(e.key== " "){
-                        location.reload()
+                if(left == true && attack == false){
+                    
+                    if (X > 10)
+                    {
+                        X-= playerSpeed
                     }
+                }
+
+                ctx.drawImage(model.activeImages[frame],X,Y,40,50)
+
+                //Draw Balls
+                b.forEach(function (ball) {
+                    ball.draw()
                 })
-            }
+
+                //Bounce Balls
+                b.forEach(ball=> {
+                    ball.update()
+                })
+
+                //Test Ball-Character Colision
+                b.forEach(ball=>{
+                    ball.testDamage()
+                })
+
+                //Attacking Situations 
+                if(p.length != 0){
+
+                    p.forEach(function (projectile) {
+                        projectile.draw()
+                    })
+
+                    p.forEach(projectile=>{
+                        projectile.update()
+                    })
+
+                    p.forEach(projectile=>{
+                        projectile.testColision()
+                    })
+                }
+            break
+        }
     }
-        
-}
 
-function loseGame(){
-
-    alert("haha")
 }
