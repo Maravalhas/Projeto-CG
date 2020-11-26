@@ -194,7 +194,7 @@ function createBalls(){
         // random position
         if(b.length == 0){
 
-            xInit = 30 + Math.random() * (W - 30)
+            xInit = 50 + Math.random() * (W - 50)
         } else{
 
             b.forEach(ball=>{
